@@ -1,21 +1,33 @@
 import speedtest
+from speedtest import SpeedtestHTTPError, ServersRetrievalError
 import json
 import time
+from datetime import datetime, timezone
 
 while 1:
-    servers = []
+    servers = [1]
 
     try:
         s = speedtest.Speedtest()
-        s.get_servers(servers)
+        # s.get_servers(servers)
         s.get_best_server()
 
         s.download(threads=1)
+        results = s.results.dict()
+    except (SpeedtestHTTPError) as e:
+        print("Got an error, think it's a no connection")
+        print(e)
+        results = {
+            "download": 0,
+            "ping": 0,
+            "timestamp": datetime.now(timezone.utc).isoformat(),
+        }
     except:
-        print('Failed for reasons, trying again')
+        print(
+            "Failed for reasons, don't think it connection, not recording, and trying again"
+        )
         time.sleep(5)
         continue
-    results = s.results.dict()
     result_str = json.dumps(
         {
             "download_bps": results["download"],
